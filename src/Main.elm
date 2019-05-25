@@ -107,6 +107,7 @@ type alias Skill =
     { name : String
     , when : String
     , roll : String
+    , sep : String
     , and : String
     , alts : List String
     , after : Maybe String
@@ -132,22 +133,50 @@ skillEl skill =
         []
         [ el titleStyle <| text skill.name
         , paragraph
-            [ width <| px 700
-            , spacing -20
+            [ width <| px 720
             ]
-            [ el italics <| text skill.when
-            , text skill.roll
-            , el [ smallCaps ] <| text <| String.toLower skill.name
-            , text skill.and
-            , textColumn [ paddingXY 0 xs ] <| List.map bullet skill.alts
-            , case skill.after of
-                Nothing ->
-                    none
+            ([ el italics <| text skill.when
+             , text skill.roll
+             , el [ smallCaps ] <| text <| String.toLower skill.name
+             , text skill.sep
+             ]
+                ++ smallCapsFormat skill.and
+            )
+        , textColumn [ paddingXY 0 xs ] <| List.map bullet skill.alts
+        , case skill.after of
+            Nothing ->
+                none
 
-                Just str ->
-                    text str
-            ]
+            Just str ->
+                paragraph [] <| smallCapsFormat str
         ]
+
+
+smallCapsFormat : String -> List (Element msg)
+smallCapsFormat txt =
+    let
+        allCaps : String -> Bool
+        allCaps str =
+            String.toUpper str == str
+
+        boolPair : String -> ( Bool, String )
+        boolPair str =
+            ( allCaps str, str )
+
+        toElement : ( Bool, String ) -> Element msg
+        toElement pair =
+            case pair of
+                ( True, str ) ->
+                    el [ smallCaps ] <| text <| String.toLower str
+
+                ( False, str ) ->
+                    text str
+    in
+    txt
+        |> String.words
+        |> List.map boolPair
+        |> List.map toElement
+        |> List.intersperse (text " ")
 
 
 main : Html msg
@@ -176,6 +205,7 @@ kraft =
     { name = "KRAFT"
     , when = "När du brukar kraft, "
     , roll = "slå+"
+    , sep = " "
     , and = " och välj bland alternativen. På 12+, tre. På 10-11, två. På 7-9, ett."
     , alts =
         [ "Du vållar stor skada."
@@ -191,6 +221,7 @@ finess =
     { name = "FINESS"
     , when = "När du använder finess, "
     , roll = "slå+"
+    , sep = " "
     , and = " och välj bland alternativen. På 12+, tre. På 10-11, två. På 7-9, ett."
     , alts =
         [ "Du gör det snabbt."
@@ -206,7 +237,8 @@ insikt =
     { name = "INSIKT"
     , when = "När du använder insikt, "
     , roll = "slå+"
-    , and = ". På 12+, ta 3 Hum. På 10-11, ta 2 Hum. På 7-9, ta 1 Hum. Spendera Hum en-mot-en under scenen för att ställa frågor till SL från listan:"
+    , sep = ". "
+    , and = "På 12+, ta 3 HUM. På 10-11, ta 2 HUM. På 7-9, ta 1 HUM. Spendera HUM en-mot-en under scenen för att ställa frågor till SL från listan:"
     , alts =
         [ "Vad är det egentligen som pågår här?"
         , "Vad bör jag hålla utkik efter?"
@@ -214,7 +246,7 @@ insikt =
         , "Vad är det de faktiskt känner? Vad vill de?"
         , "Hur kan jag få dem att... ?"
         ]
-    , after = Just "På en miss får du inget Hum, men du kan ställa en fråga på en gång."
+    , after = Just "På en miss får du inget HUM, men du kan ställa en fråga på en gång."
     }
 
 
@@ -237,14 +269,14 @@ Du gör det oundvikligt, stilfullt eller med större effekt.
 
 INSIKT
 När du använder insikt, slå+INSIKT.
-På 12+, ta 3 Hum. På 10-11, ta 2 Hum. På 7-9, ta 1 Hum. 
-Spendera Hum en-mot-en under scenen för att ställa frågor till SL från listan: 
+På 12+, ta 3 HUM. På 10-11, ta 2 HUM. På 7-9, ta 1 HUM. 
+Spendera HUM en-mot-en under scenen för att ställa frågor till SL från listan: 
 Vad är det egentligen som pågår här?
 Vad bör jag hålla utkik efter?
 Vad är det bästa sättet att ____?
 Vad är det de faktiskt känner? Vad vill de?
 Hur kan jag få dem att ____?
-På en miss får du inget Hum, men du kan ställa en fråga på en gång.
+På en miss får du inget HUM, men du kan ställa en fråga på en gång.
 
 HJÄLPA
 För varje drag ovan (Kraft, Finess, Insikt), 
